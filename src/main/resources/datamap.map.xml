@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-map xmlns="http://cayenne.apache.org/schema/10/modelMap"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://cayenne.apache.org/schema/10/modelMap http://cayenne.apache.org/schema/10/modelMap.xsd"
+	 project-version="11">
+	<property name="defaultPackage" value="com.db2api.persistent"/>
+	<db-entity name="admin_user">
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isGenerated="true" mandatory="true"/>
+		<db-attribute name="password" type="VARCHAR" length="255" mandatory="true"/>
+		<db-attribute name="role" type="VARCHAR" length="50" mandatory="true"/>
+		<db-attribute name="username" type="VARCHAR" length="255" mandatory="true"/>
+	</db-entity>
+	<db-entity name="api_definition">
+		<db-attribute name="allowed_operations" type="VARCHAR" length="255"/>
+		<db-attribute name="api_type" type="VARCHAR" isMandatory="true" length="50"/>
+		<db-attribute name="connection_id" type="INTEGER"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true" isGenerated="true"/>
+		<db-attribute name="included_columns" type="LONGVARCHAR"/>
+		<db-attribute name="table_name" type="VARCHAR" isMandatory="true" length="255"/>
+	</db-entity>
+	<db-entity name="client">
+		<db-attribute name="client_id" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="client_secret" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true" isGenerated="true"/>
+		<db-attribute name="organization_id" type="INTEGER"/>
+	</db-entity>
+	<db-entity name="db_connection">
+		<db-attribute name="driver_class" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true" isGenerated="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="password" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="url" type="VARCHAR" isMandatory="true" length="500"/>
+		<db-attribute name="username" type="VARCHAR" isMandatory="true" length="255"/>
+	</db-entity>
+	<db-entity name="organization">
+		<db-attribute name="id" type="INTEGER" isPrimaryKey="true" isMandatory="true" isGenerated="true"/>
+		<db-attribute name="name" type="VARCHAR" isMandatory="true" length="255"/>
+		<db-attribute name="status" type="VARCHAR" isMandatory="true" length="50"/>
+	</db-entity>
+	<obj-entity name="AdminUser" className="com.db2api.persistent.AdminUser" dbEntityName="admin_user">
+		<obj-attribute name="password" type="java.lang.String" db-attribute-path="password"/>
+		<obj-attribute name="role" type="java.lang.String" db-attribute-path="role"/>
+		<obj-attribute name="username" type="java.lang.String" db-attribute-path="username"/>
+	</obj-entity>
+	<obj-entity name="ApiDefinition" className="com.db2api.persistent.ApiDefinition" dbEntityName="api_definition">
+		<obj-attribute name="allowedOperations" type="java.lang.String" db-attribute-path="allowed_operations"/>
+		<obj-attribute name="apiType" type="java.lang.String" db-attribute-path="api_type"/>
+		<obj-attribute name="includedColumns" type="java.lang.String" db-attribute-path="included_columns"/>
+		<obj-attribute name="tableName" type="java.lang.String" db-attribute-path="table_name"/>
+	</obj-entity>
+	<obj-entity name="Client" className="com.db2api.persistent.Client" dbEntityName="client">
+		<obj-attribute name="clientId" type="java.lang.String" db-attribute-path="client_id"/>
+		<obj-attribute name="clientSecret" type="java.lang.String" db-attribute-path="client_secret"/>
+	</obj-entity>
+	<obj-entity name="DbConnection" className="com.db2api.persistent.DbConnection" dbEntityName="db_connection">
+		<obj-attribute name="driverClass" type="java.lang.String" db-attribute-path="driver_class"/>
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="password" type="java.lang.String" db-attribute-path="password"/>
+		<obj-attribute name="url" type="java.lang.String" db-attribute-path="url"/>
+		<obj-attribute name="username" type="java.lang.String" db-attribute-path="username"/>
+	</obj-entity>
+	<obj-entity name="Organization" className="com.db2api.persistent.Organization" dbEntityName="organization">
+		<obj-attribute name="name" type="java.lang.String" db-attribute-path="name"/>
+		<obj-attribute name="status" type="java.lang.String" db-attribute-path="status"/>
+	</obj-entity>
+	<db-relationship name="api_definitions" source="db_connection" target="api_definition" toMany="true">
+		<db-attribute-pair source="id" target="connection_id"/>
+	</db-relationship>
+	<db-relationship name="clients" source="organization" target="client" toMany="true">
+		<db-attribute-pair source="id" target="organization_id"/>
+	</db-relationship>
+	<db-relationship name="connection" source="api_definition" target="db_connection" toMany="false">
+		<db-attribute-pair source="connection_id" target="id"/>
+	</db-relationship>
+	<db-relationship name="organization" source="client" target="organization" toMany="false">
+		<db-attribute-pair source="organization_id" target="id"/>
+	</db-relationship>
+	<obj-relationship name="apiDefinitions" source="DbConnection" target="ApiDefinition" deleteRule="Deny" db-relationship-path="api_definitions"/>
+	<obj-relationship name="clients" source="Organization" target="Client" deleteRule="Deny" db-relationship-path="clients"/>
+	<obj-relationship name="connection" source="ApiDefinition" target="DbConnection" deleteRule="Nullify" db-relationship-path="connection"/>
+	<obj-relationship name="organization" source="Client" target="Organization" deleteRule="Nullify" db-relationship-path="organization"/>
+</data-map>

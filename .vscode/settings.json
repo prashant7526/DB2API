@@ -1,0 +1,7 @@
+{
+    "r.lsp.promptToInstall": false,
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "snyk.advanced.autoSelectOrganization": true,
+    "snyk.advanced.organization": "b34e4e72-1326-4c74-8ef9-d537cf2fe295"
+}
