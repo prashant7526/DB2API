@@ -2,3 +2,4 @@ target/
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
 node_modules
+snyk.exe
