@@ -9,7 +9,7 @@ This application is built with a modern technology stack, featuring a Java-based
 
 ## Features
 
-*   **Automatic API Generation:** Instantly create REST and GraphQL APIs from your existing DB2 database schemas.
+*   **Automatic API Generation:** Instantly create REST and GraphQL APIs from your existing database schemas.
 *   **Secure by Design:** The application includes a robust security model with JWT-based authentication and role-based access control.
 *   **Intuitive User Interface:** A user-friendly web interface built with Vaadin allows for easy management of database connections, API definitions, and users.
 *   **Dynamic and Flexible:** The generated APIs are dynamic and can be easily customized to your needs.
