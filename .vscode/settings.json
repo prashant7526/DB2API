@@ -2,9 +2,12 @@
     "r.lsp.promptToInstall": false,
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "automatic",
-    "snyk.advanced.autoSelectOrganization": true,
+    "snyk.advanced.autoSelectOrganization": false,
     "sonarlint.connectedMode.project": {
         "connectionId": "prashant7526",
         "projectKey": "prashant7526_DB2API"
+    },
+    "files.watcherExclude": {
+        "**/target": true
     }
 }
