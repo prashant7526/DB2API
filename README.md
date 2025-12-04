@@ -1,9 +1,9 @@
 
-# DB2API: Automatic REST and GraphQL API Generation for DB2 Databases
+# DB2API: Automatic REST and GraphQL API Generation for DB Databases
 
 ## Overview
 
-DB2API is a powerful web application that empowers you to instantly create REST and GraphQL APIs from your DB2 databases. Say goodbye to tedious boilerplate code and manual API development. With DB2API, you can connect to your database, select tables and columns, and generate a fully functional and secure API in minutes.
+DB2API is a powerful web application that empowers you to instantly create REST and GraphQL APIs from your existing databases. Say goodbye to tedious boilerplate code and manual API development. With DB2API, you can connect to your database, select tables and columns, and generate a fully functional and secure API in minutes.
 
 This application is built with a modern technology stack, featuring a Java-based backend with Vaadin for the user interface, and a robust set of features for developers and administrators.
 
@@ -29,6 +29,8 @@ This application is built with a modern technology stack, featuring a Java-based
     *   HTML/CSS
     *   TypeScript
 *   **Database:**
+    *   MySQL
+    *   PostgreSQL
     *   DB2 (can be extended to other SQL databases)
 
 ## Getting Started
