@@ -1,5 +1,5 @@
 
-# DB2API: Automatic REST and GraphQL API Generation for DB Databases
+# DB2API: Automatic REST and GraphQL API Generation for Any Databases
 
 ## Overview
 
