@@ -24,13 +24,14 @@ public class SchemaDiscoveryService {
         String decryptedPassword = encryptionService.decrypt(conn.getPassword());
         try (Connection connection = DriverManager.getConnection(conn.getUrl(), conn.getUsername(), decryptedPassword)) {
             DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet rs = metaData.getTables(null, null, "%", new String[] { "TABLE", "VIEW" })) {
+            try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE", "VIEW"})) {
                 while (rs.next()) {
                     tables.add(rs.getString("TABLE_NAME"));
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            // In a real application, use a logger here
+            System.err.println("Error discovering tables: " + e.getMessage());
         }
         return tables;
     }
@@ -46,7 +47,8 @@ public class SchemaDiscoveryService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            // In a real application, use a logger here
+            System.err.println("Error discovering columns: " + e.getMessage());
         }
         return columns;
     }

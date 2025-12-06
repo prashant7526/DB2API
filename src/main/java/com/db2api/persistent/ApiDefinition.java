@@ -1,52 +1,32 @@
 package com.db2api.persistent;
 
-import org.apache.cayenne.CayenneDataObject;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-public class ApiDefinition extends CayenneDataObject {
+@Entity
+@Table(name = "api_definition")
+@Getter
+@Setter
+public class ApiDefinition {
 
-    public static final String TABLE_NAME_PROPERTY = "tableName";
-    public static final String API_TYPE_PROPERTY = "apiType";
-    public static final String ALLOWED_OPERATIONS_PROPERTY = "allowedOperations";
-    public static final String INCLUDED_COLUMNS_PROPERTY = "includedColumns";
-    public static final String CONNECTION_PROPERTY = "connection";
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public String getTableName() {
-        return (String) readProperty(TABLE_NAME_PROPERTY);
-    }
+    @Column(name = "table_name")
+    private String tableName;
 
-    public void setTableName(String tableName) {
-        writeProperty(TABLE_NAME_PROPERTY, tableName);
-    }
+    @Column(name = "api_type")
+    private String apiType;
 
-    public String getApiType() {
-        return (String) readProperty(API_TYPE_PROPERTY);
-    }
+    @Column(name = "allowed_operations")
+    private String allowedOperations;
 
-    public void setApiType(String apiType) {
-        writeProperty(API_TYPE_PROPERTY, apiType);
-    }
+    @Column(name = "included_columns")
+    private String includedColumns;
 
-    public String getAllowedOperations() {
-        return (String) readProperty(ALLOWED_OPERATIONS_PROPERTY);
-    }
-
-    public void setAllowedOperations(String allowedOperations) {
-        writeProperty(ALLOWED_OPERATIONS_PROPERTY, allowedOperations);
-    }
-
-    public String getIncludedColumns() {
-        return (String) readProperty(INCLUDED_COLUMNS_PROPERTY);
-    }
-
-    public void setIncludedColumns(String includedColumns) {
-        writeProperty(INCLUDED_COLUMNS_PROPERTY, includedColumns);
-    }
-
-    public DbConnection getConnection() {
-        return (DbConnection) readProperty(CONNECTION_PROPERTY);
-    }
-
-    public void setConnection(DbConnection connection) {
-        setToOneTarget(CONNECTION_PROPERTY, connection, true);
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "connection_id")
+    private DbConnection connection;
 }

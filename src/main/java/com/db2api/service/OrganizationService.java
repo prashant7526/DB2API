@@ -2,9 +2,9 @@ package com.db2api.service;
 
 import com.db2api.persistent.Client;
 import com.db2api.persistent.Organization;
-import org.apache.cayenne.ObjectContext;
-import org.apache.cayenne.configuration.server.ServerRuntime;
-import org.apache.cayenne.query.ObjectSelect;
+import com.db2api.repository.ClientRepository;
+import com.db2api.repository.OrganizationRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,54 +13,37 @@ import java.util.UUID;
 @Service
 public class OrganizationService {
 
-    private final ServerRuntime serverRuntime;
+    private final OrganizationRepository organizationRepository;
+    private final ClientRepository clientRepository;
     private final EncryptionService encryptionService;
 
-    public OrganizationService(ServerRuntime serverRuntime, EncryptionService encryptionService) {
-        this.serverRuntime = serverRuntime;
+    public OrganizationService(OrganizationRepository organizationRepository, ClientRepository clientRepository, EncryptionService encryptionService) {
+        this.organizationRepository = organizationRepository;
+        this.clientRepository = clientRepository;
         this.encryptionService = encryptionService;
     }
 
-    private ObjectContext getContext() {
-        return serverRuntime.newContext();
-    }
-
     public List<Organization> getAllOrganizations() {
-        return ObjectSelect.query(Organization.class).select(getContext());
+        return organizationRepository.findAll();
     }
 
     public void saveOrganization(Organization organization) {
-        ObjectContext context = organization.getObjectContext();
-        if (context == null) {
-            context = getContext();
-            context.registerNewObject(organization);
-        }
-        context.commitChanges();
+        organizationRepository.save(organization);
     }
 
     public void deleteOrganization(Organization organization) {
-        ObjectContext context = organization.getObjectContext();
-        if (context != null) {
-            context.deleteObjects(organization);
-            context.commitChanges();
-        }
+        organizationRepository.delete(organization);
     }
 
     public List<Client> getClients(Organization organization) {
-        if (organization.getObjectId().isTemporary()) {
+        if (organization.getId() == null) {
             return List.of();
         }
-        // Refreshing to ensure we have the latest list
-        return ObjectSelect.query(Client.class)
-                .where(Client.ORGANIZATION.eq(organization))
-                .select(organization.getObjectContext());
+        return organization.getClients();
     }
 
     public void saveClient(Client client, Organization organization) {
-        ObjectContext context = client.getObjectContext();
-        if (context == null) {
-            context = organization.getObjectContext(); // Use same context as organization
-            context.registerNewObject(client);
+        if (client.getOrganization() == null) {
             client.setOrganization(organization);
         }
 
@@ -73,33 +56,24 @@ public class OrganizationService {
             // Here we just store it encrypted.
         }
 
-        context.commitChanges();
+        clientRepository.save(client);
     }
 
     public void deleteClient(Client client) {
-        ObjectContext context = client.getObjectContext();
-        if (context != null) {
-            context.deleteObjects(client);
-            context.commitChanges();
-        }
+        clientRepository.delete(client);
     }
 
     public Organization createNewOrganization() {
-        Organization org = new Organization();
-        org.setObjectContext(getContext()); // Attach to a context immediately
-        return org;
+        return new Organization();
     }
 
     public Client createNewClient(Organization org) {
         Client client = new Client();
-        client.setObjectContext(org.getObjectContext());
         client.setOrganization(org);
         return client;
     }
 
     public Client findClientByClientId(String clientId) {
-        return ObjectSelect.query(Client.class)
-                .where(Client.CLIENT_ID.eq(clientId))
-                .selectOne(getContext());
+        return clientRepository.findByClientId(clientId).orElse(null);
     }
 }
