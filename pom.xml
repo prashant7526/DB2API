@@ -24,7 +24,7 @@
 		<spring-webflux.version>6.2.0</spring-webflux.version>
 		<spring-graphql.version>1.3.1</spring-graphql.version>
 		<spring-security.version>6.2.0</spring-security.version>
-		<postgresql.version>42.7.2</postgresql.version>
+		<postgresql.version>42.7.8</postgresql.version>
 	</properties>
 	<dependencies>
 		<dependency>
