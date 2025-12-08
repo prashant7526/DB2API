@@ -20,7 +20,7 @@
 		<lombok.version>1.18.30</lombok.version>
 		<jakarta.annotation.version>2.1.1</jakarta.annotation.version>
 		<spring-boot.version>3.2.1</spring-boot.version>
-		<nimbus-jose-jwt.version>9.37.4</nimbus-jose-jwt.version>
+		<nimbus-jose-jwt.version>9.48</nimbus-jose-jwt.version>
 		<spring-webflux.version>6.2.0</spring-webflux.version>
 		<spring-graphql.version>1.3.1</spring-graphql.version>
 		<spring-security.version>6.2.0</spring-security.version>
