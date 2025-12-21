@@ -1,8 +1,8 @@
 package com.db2api.controller;
 
-import com.db2api.persistent.ApiDefinition;
-import com.db2api.service.ApiDefinitionService;
-import com.db2api.service.ExternalConnectivityService;
+import com.db2api.persistent.api.ApiDefinition;
+import com.db2api.service.api.ApiDefinitionService;
+import com.db2api.service.connection.ExternalConnectivityService;
 import org.apache.cayenne.DataRow;
 import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.query.SQLExec;
@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+/**
+ * REST Controller that handles dynamic API requests.
+ * It translates incoming HTTP requests (GET, PUT, DELETE) into SQL queries
+ * executed against external databases based on ApiDefinitions.
+ */
 @RestController
 @RequestMapping("/api/dynamic")
 public class DynamicRestController {
@@ -20,11 +25,25 @@ public class DynamicRestController {
     private final ApiDefinitionService apiDefinitionService;
     private final ExternalConnectivityService externalConnectivityService;
 
-    public DynamicRestController(ApiDefinitionService apiDefinitionService, ExternalConnectivityService externalConnectivityService) {
+    /**
+     * Constructs the DynamicRestController with required services.
+     * 
+     * @param apiDefinitionService        the service for retrieving API mappings
+     * @param externalConnectivityService the service for external database
+     *                                    connectivity
+     */
+    public DynamicRestController(ApiDefinitionService apiDefinitionService,
+            ExternalConnectivityService externalConnectivityService) {
         this.apiDefinitionService = apiDefinitionService;
         this.externalConnectivityService = externalConnectivityService;
     }
 
+    /**
+     * Retrieves data from a dynamic API endpoint.
+     * 
+     * @param tableName the name of the table to query
+     * @return a list of records from the external database
+     */
     @GetMapping("/{tableName}")
     public ResponseEntity<List<Map<String, Object>>> getData(@PathVariable String tableName) {
         // TODO: Validate Client Access (Security)
@@ -41,7 +60,9 @@ public class DynamicRestController {
         try {
             ObjectContext context = externalConnectivityService.getContext(apiDef.getConnection());
 
-            String columns = (apiDef.getIncludedColumns() != null && !apiDef.getIncludedColumns().isEmpty()) ? apiDef.getIncludedColumns() : "*";
+            String columns = (apiDef.getIncludedColumns() != null && !apiDef.getIncludedColumns().isEmpty())
+                    ? apiDef.getIncludedColumns()
+                    : "*";
             String sql = "SELECT " + columns + " FROM " + tableName;
 
             List<DataRow> rows = SQLSelect.dataRowQuery(sql).select(context);
@@ -59,6 +80,13 @@ public class DynamicRestController {
         }
     }
 
+    /**
+     * Inserts data into a dynamic API endpoint.
+     * 
+     * @param tableName the name of the table to insert into
+     * @param data      the data to be inserted
+     * @return a success or error response
+     */
     @PutMapping("/{tableName}")
     public ResponseEntity<?> putData(@PathVariable String tableName, @RequestBody Map<String, Object> data) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");
@@ -96,6 +124,13 @@ public class DynamicRestController {
         }
     }
 
+    /**
+     * Deletes data from a dynamic API endpoint based on conditions.
+     * 
+     * @param tableName  the name of the table to delete from
+     * @param conditions the WHERE clause conditions
+     * @return a success or error response
+     */
     @DeleteMapping("/{tableName}")
     public ResponseEntity<?> deleteData(@PathVariable String tableName, @RequestParam Map<String, String> conditions) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");

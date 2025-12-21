@@ -1,7 +1,7 @@
 package com.db2api.security;
 
-import com.db2api.persistent.AdminUser;
-import com.db2api.repository.AdminUserRepository;
+import com.db2api.persistent.admin.AdminUser;
+import com.db2api.repository.admin.AdminUserRepository;
 
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

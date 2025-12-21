@@ -1,7 +1,7 @@
 package com.db2api.migration;
 
-import com.db2api.persistent.DbConnection;
-import com.db2api.repository.DbConnectionRepository;
+import com.db2api.persistent.connection.DbConnection;
+import com.db2api.repository.connection.DbConnectionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
