@@ -1,5 +1,10 @@
-target/
+
 # Snyk Security Extension - AI Rules (auto-generated)
-.github/instructions/snyk_rules.instructions.md
+.windsurf/rules/snyk_rules.md
 node_modules
-snyk.exe
+.agent
+.idea
+.idx
+.mvn
+.vscode
+.windsurf
