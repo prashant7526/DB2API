@@ -20,7 +20,7 @@
 		<lombok.version>1.18.34</lombok.version>
 		<jakarta.annotation.version>3.0.0</jakarta.annotation.version>
 
-		<postgresql.version>42.7.4</postgresql.version>
+		<postgresql.version>42.7.7</postgresql.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.40</version>
+			<version>10.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.annotation</groupId>
