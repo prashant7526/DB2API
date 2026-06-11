@@ -79,13 +79,15 @@ public class ConnectionView extends VerticalLayout {
 
     /**
      * Saves the current database connection.
-     * 
-     * @param binder the binder containing form values
-     * @param grid   the grid to refresh after saving
+     * Uses the raw password from the password field to avoid double-encryption.
+     *
+     * @param binder   the binder containing form values
+     * @param grid     the grid to refresh after saving
+     * @param password the password field to get the raw password from
      */
-    private void save(Binder<DbConnection> binder, Grid<DbConnection> grid) {
+    private void save(Binder<DbConnection> binder, Grid<DbConnection> grid, PasswordField password) {
         if (binder.validate().isOk()) {
-            connectionService.saveConnection(currentConnection);
+            connectionService.saveConnection(currentConnection, password.getValue());
             updateList(grid);
             Notification.show("Connection saved");
         }
@@ -153,16 +155,15 @@ public class ConnectionView extends VerticalLayout {
         grid.addColumn(DbConnection::getUrl).setHeader("URL");
         grid.asSingleSelect().addValueChangeListener(event -> editConnection(event.getValue(), binder));
 
-        // Binder Configuration
+        // Binder Configuration (password is handled separately to avoid double-encryption)
         binder.bind(name, DbConnection::getName, DbConnection::setName);
         binder.bind(url, DbConnection::getUrl, DbConnection::setUrl);
         binder.bind(username, DbConnection::getUsername, DbConnection::setUsername);
-        binder.bind(password, DbConnection::getPassword, DbConnection::setPassword);
         binder.bind(driverClass, DbConnection::getDriverClass, DbConnection::setDriverClass);
 
         // Action Listeners
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        save.addClickListener(event -> save(binder, grid));
+        save.addClickListener(event -> save(binder, grid, password));
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         delete.addClickListener(event -> delete(grid, binder));
         cancel.addClickListener(event -> editConnection(null, binder));

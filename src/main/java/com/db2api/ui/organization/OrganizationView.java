@@ -171,8 +171,13 @@ public class OrganizationView extends VerticalLayout {
         addClient.addClickListener(e -> {
             if (currentOrganization != null && currentOrganization.getId() != null) {
                 Client client = organizationService.createNewClient(currentOrganization);
-                organizationService.saveClient(client, currentOrganization);
+                String rawSecret = organizationService.saveClient(client, currentOrganization);
                 updateClientList(clientGrid);
+                // Show the raw secret to the user ONCE - it cannot be retrieved later
+                if (rawSecret != null) {
+                    Notification.show("Client Secret (save this now!): " + rawSecret,
+                            15000, Notification.Position.MIDDLE);
+                }
             } else {
                 Notification.show("Save organization first");
             }

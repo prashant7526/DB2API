@@ -1,0 +1,3 @@
+- Domain-driven package separation where core interfaces reside in root packages (e.g., `service.ApiDefinitionService`) while specialized implementations or sub-domains are nested in sub-packages (e.g., `service.api.ApiDefinitionService`).
+- Constructor-based dependency injection is consistently used across controllers, services, and configuration components to ensure immutability and testability.
+- Vaadin UI views follow a consistent naming convention ending in 'View' (e.g., `ConnectionView`, `ApiBuilderView`) and are organized into domain-specific sub-packages under `ui`.

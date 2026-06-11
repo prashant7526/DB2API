@@ -1,6 +1,8 @@
 package com.db2api.persistent.organization;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,12 +29,16 @@ public class Organization {
     /**
      * The name of the organization.
      */
+    @NotBlank(message = "Organization name is required")
+    @Size(max = 255)
     @Column(name = "name")
     private String name;
 
     /**
      * The status of the organization (e.g., ACTIVE, INACTIVE).
      */
+    @NotBlank(message = "Status is required")
+    @Size(max = 50)
     @Column(name = "status")
     private String status;
 

@@ -4,6 +4,19 @@ class FlowUiInitializationError extends Error {
 // flow uses body for keeping references
 const flowRoot = window.document.body;
 const $wnd = window;
+const ROOT_NODE_ID = 1; // See StateTree.java
+function getClients() {
+    return Object.keys($wnd.Vaadin.Flow.clients)
+        .filter((key) => key !== 'TypeScript')
+        .map((id) => $wnd.Vaadin.Flow.clients[id]);
+}
+function sendEvent(eventName, data) {
+    getClients().forEach((client) => client.sendEventMessage(ROOT_NODE_ID, eventName, data));
+}
+// In the future could be replaced with RegExp.escape()
+function escapeRegExp(pattern) {
+    return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 /**
  * Client API for flow UI operations.
  */
@@ -30,7 +43,7 @@ export class Flow {
         const elm = document.head.querySelector('base');
         this.baseRegex = new RegExp(`^${
         // IE11 does not support document.baseURI
-        (document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, '')}`);
+        escapeRegExp(decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, '')))}`);
         this.appShellTitle = document.title;
         // Put a vaadin-connection-indicator in the dom
         this.addConnectionIndicator();
@@ -131,11 +144,12 @@ export class Flow {
             this.loadingStarted();
             // The callback to run from server side to cancel navigation
             this.container.serverConnected = (cancel) => {
-                resolve(cmd && cancel ? cmd.prevent() : {});
+                var _a;
+                resolve(cmd && cancel ? cmd.prevent() : (_a = cmd === null || cmd === void 0 ? void 0 : cmd.continue) === null || _a === void 0 ? void 0 : _a.call(cmd));
                 this.loadingFinished();
             };
             // Call server side to check whether we can leave the view
-            flowRoot.$server.leaveNavigation(this.getFlowRoutePath(ctx), this.getFlowRouteQuery(ctx));
+            sendEvent('ui-leave-navigation', { route: this.getFlowRoutePath(ctx), query: this.getFlowRouteQuery(ctx) });
         });
     }
     // Send the remote call to `JavaScriptBootstrapUI` to render the flow
@@ -146,6 +160,7 @@ export class Flow {
                 this.loadingStarted();
                 // The callback to run from server side once the view is ready
                 this.container.serverConnected = (cancel, redirectContext) => {
+                    var _a;
                     if (cmd && cancel) {
                         resolve(cmd.prevent());
                     }
@@ -153,6 +168,7 @@ export class Flow {
                         resolve(cmd.redirect(redirectContext.pathname));
                     }
                     else {
+                        (_a = cmd === null || cmd === void 0 ? void 0 : cmd.continue) === null || _a === void 0 ? void 0 : _a.call(cmd);
                         this.container.style.display = '';
                         resolve(this.container);
                     }
@@ -162,7 +178,13 @@ export class Flow {
                     this.loadingFinished();
                 };
                 // Call server side to navigate to the given route
-                flowRoot.$server.connectClient(this.getFlowRoutePath(ctx), this.getFlowRouteQuery(ctx), this.appShellTitle, history.state, this.navigation);
+                sendEvent('ui-navigate', {
+                    route: this.getFlowRoutePath(ctx),
+                    query: this.getFlowRouteQuery(ctx),
+                    appShellTitle: this.appShellTitle,
+                    historyState: history.state,
+                    trigger: this.navigation
+                });
                 // Default to history navigation trigger.
                 // Link and client cases are handled by click listener in loadingFinished().
                 this.navigation = 'history';
@@ -183,6 +205,7 @@ export class Flow {
     async flowInit() {
         // Do not start flow twice
         if (!this.isFlowClientLoaded()) {
+            $wnd.Vaadin.Flow.nonce = this.findNonce();
             // show flow progress indicator
             this.loadingStarted();
             // Initialize server side UI
@@ -192,15 +215,9 @@ export class Flow {
                 await this.loadScript(pushScript);
             }
             const { appId } = appConfig;
-            // Load bootstrap script with server side parameters
-            const bootstrapMod = await import('./FlowBootstrap');
-            await bootstrapMod.init(this.response);
-            // Load custom modules defined by user
-            if (typeof this.config.imports === 'function') {
-                this.injectAppIdScript(appId);
-                await this.config.imports();
-            }
             // we use a custom tag for the flow app container
+            // This must be created before bootstrapMod.init is called as that call
+            // can handle a UIDL from the server, which relies on the container being available
             const tag = `flow-container-${appId.toLowerCase()}`;
             const serverCreatedContainer = document.querySelector(tag);
             if (serverCreatedContainer) {
@@ -211,6 +228,14 @@ export class Flow {
                 this.container.id = appId;
             }
             flowRoot.$[appId] = this.container;
+            // Load bootstrap script with server side parameters
+            const bootstrapMod = await import('./FlowBootstrap');
+            bootstrapMod.init(this.response);
+            // Load custom modules defined by user
+            if (typeof this.config.imports === 'function') {
+                this.injectAppIdScript(appId);
+                await this.config.imports();
+            }
             // Load flow-client module
             const clientMod = await import('./FlowClient');
             await this.flowInitClient(clientMod);
@@ -232,14 +257,33 @@ export class Flow {
             script.onload = () => resolve();
             script.onerror = reject;
             script.src = url;
+            const { nonce } = $wnd.Vaadin.Flow;
+            if (nonce !== undefined) {
+                script.setAttribute('nonce', nonce);
+            }
             document.body.appendChild(script);
         });
+    }
+    findNonce() {
+        let nonce;
+        const scriptTags = document.head.getElementsByTagName('script');
+        for (const scriptTag of scriptTags) {
+            if (scriptTag.nonce) {
+                nonce = scriptTag.nonce;
+                break;
+            }
+        }
+        return nonce;
     }
     injectAppIdScript(appId) {
         const appIdWithoutHashCode = appId.substring(0, appId.lastIndexOf('-'));
         const scriptAppId = document.createElement('script');
         scriptAppId.type = 'module';
         scriptAppId.setAttribute('data-app-id', appIdWithoutHashCode);
+        const { nonce } = $wnd.Vaadin.Flow;
+        if (nonce !== undefined) {
+            scriptAppId.setAttribute('nonce', nonce);
+        }
         document.body.append(scriptAppId);
     }
     // After the flow-client javascript module has been loaded, this initializes flow UI
@@ -250,9 +294,7 @@ export class Flow {
         return new Promise((resolve) => {
             const intervalId = setInterval(() => {
                 // client `isActive() == true` while initializing or processing
-                const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-                    .filter((key) => key !== 'TypeScript')
-                    .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
+                const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
                 if (!initializing) {
                     clearInterval(intervalId);
                     resolve();

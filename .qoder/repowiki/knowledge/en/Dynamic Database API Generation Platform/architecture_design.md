@@ -1,0 +1,5 @@
+- Entry point: `DB2APIApplication` bootstraps Spring Boot with Vaadin theming (`@Theme("db2api")`).
+- Layered structure: `controller` (REST/GraphQL exposure), `service` (business logic, encryption, schema discovery), `repository` (JPA/Cayenne data access), `persistent` (domain entities), `config` (security, Cayenne, dynamic GraphQL wiring), `ui` (Vaadin views), and `security` (custom user details).
+- Dual ORM strategy: JPA/Hibernate manages internal system state (users, organizations, connections) while Apache Cayenne (`CayenneConfig`, `datamap.map.xml`) handles dynamic external database connectivity via `ExternalConnectivityService`.
+- Dynamic API engine: `DynamicGraphQLProvider` rebuilds the GraphQL schema at runtime based on `ApiDefinition` entities, and `DynamicRestController` maps HTTP verbs to Cayenne-executed SQL for external tables.
+- Security boundary: `SecurityConfig` extends `VaadinWebSecurity` for UI protection, while JWT/OAuth2 resource server dependencies suggest token-based API security.

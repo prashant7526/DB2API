@@ -1,0 +1,1 @@
+Spring Boot 3.3.6 with Java 21, Vaadin 24.9.7 for UI, Apache Cayenne 4.2.1 for dynamic external DB mapping, Spring GraphQL, and PostgreSQL driver.

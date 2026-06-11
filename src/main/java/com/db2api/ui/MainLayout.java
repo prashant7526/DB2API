@@ -7,6 +7,8 @@ import com.db2api.ui.admin.AdminUserView;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -69,7 +71,18 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller(nav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
 
-        addToNavbar(toggle, title);
+        // Logout button in navbar
+        Button logout = new Button("Logout", VaadinIcon.SIGN_OUT.create());
+        logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        logout.addClickListener(e -> {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+            jakarta.servlet.http.HttpServletRequest httpRequest = (jakarta.servlet.http.HttpServletRequest)
+                    com.vaadin.flow.server.VaadinServletRequest.getCurrent().getRequest();
+            httpRequest.getSession().invalidate();
+            com.vaadin.flow.component.UI.getCurrent().getPage().setLocation("/login");
+        });
+
+        addToNavbar(toggle, title, logout);
         addToDrawer(scroller);
     }
 }

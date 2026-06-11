@@ -1,0 +1,99 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: en-US
+branch: main
+exported_at: "2026-06-09T20:46:13Z"
+modules:
+    "":
+        dir_name: Dynamic Database API Generation Platform
+        title: Dynamic Database API Generation Platform
+        scope:
+            - README.md
+            - SECURITY.md
+            - .gitignore
+            - pom.xml
+            - package.json
+            - package-lock.json
+            - tsconfig.json
+            - types.d.ts
+            - effective-pom.xml
+            - .mvn/
+            - .github/
+            - .bloop/
+            - src/
+            - frontend/
+            - .bloop\DB2API-test.json
+            - .bloop\DB2API.json
+            - .bloop\bloop.settings.json
+            - .github\instructions\snyk_rules.instructions.md
+            - .metals\.tmp\classpath_20ABD14E989218FE203F82FE4AB96BDD.jar
+            - .metals\metals.lock.db
+            - .metals\metals.log
+            - .metals\metals.mv.db
+            - .mvn\wrapper\maven-wrapper.jar
+            - .mvn\wrapper\maven-wrapper.properties
+            - LICENSE
+            - frontend\index.html
+            - frontend\themes\db2api\styles.css
+            - frontend\themes\db2api\theme.json
+            - src\main\java\com\db2api\DB2APIApplication.java
+            - src\main\java\com\db2api\config\CayenneConfig.java
+            - src\main\java\com\db2api\config\DataInitializer.java
+            - src\main\java\com\db2api\config\DynamicGraphQLProvider.java
+            - src\main\java\com\db2api\config\RequestLoggingFilter.java
+            - src\main\java\com\db2api\config\SecurityConfig.java
+            - src\main\java\com\db2api\controller\AuthController.java
+            - src\main\java\com\db2api\controller\DynamicRestController.java
+            - src\main\java\com\db2api\persistent\AdminUser.java
+            - src\main\java\com\db2api\persistent\ApiDefinition.java
+            - src\main\java\com\db2api\persistent\Client.java
+            - src\main\java\com\db2api\persistent\DbConnection.java
+            - src\main\java\com\db2api\persistent\Organization.java
+            - src\main\java\com\db2api\persistent\admin\AdminUser.java
+            - src\main\java\com\db2api\persistent\api\ApiDefinition.java
+            - src\main\java\com\db2api\persistent\connection\DbConnection.java
+            - src\main\java\com\db2api\persistent\organization\Client.java
+            - src\main\java\com\db2api\persistent\organization\Organization.java
+            - src\main\java\com\db2api\repository\AdminUserRepository.java
+            - src\main\java\com\db2api\repository\ApiDefinitionRepository.java
+            - src\main\java\com\db2api\repository\ClientRepository.java
+            - src\main\java\com\db2api\repository\DbConnectionRepository.java
+            - src\main\java\com\db2api\repository\OrganizationRepository.java
+            - src\main\java\com\db2api\repository\admin\AdminUserRepository.java
+            - src\main\java\com\db2api\repository\api\ApiDefinitionRepository.java
+            - src\main\java\com\db2api\repository\connection\DbConnectionRepository.java
+            - src\main\java\com\db2api\repository\organization\ClientRepository.java
+            - src\main\java\com\db2api\repository\organization\OrganizationRepository.java
+            - src\main\java\com\db2api\security\CustomUserDetailsService.java
+            - src\main\java\com\db2api\service\AdminUserService.java
+            - src\main\java\com\db2api\service\ApiDefinitionService.java
+            - src\main\java\com\db2api\service\ConnectionService.java
+            - src\main\java\com\db2api\service\EncryptionService.java
+            - src\main\java\com\db2api\service\ExternalConnectivityService.java
+            - src\main\java\com\db2api\service\OrganizationService.java
+            - src\main\java\com\db2api\service\SchemaDiscoveryService.java
+            - src\main\java\com\db2api\service\admin\AdminUserService.java
+            - src\main\java\com\db2api\service\api\ApiDefinitionService.java
+            - src\main\java\com\db2api\service\api\SchemaDiscoveryService.java
+            - src\main\java\com\db2api\service\connection\ConnectionService.java
+            - src\main\java\com\db2api\service\connection\ExternalConnectivityService.java
+            - src\main\java\com\db2api\service\organization\OrganizationService.java
+            - src\main\java\com\db2api\ui\AdminUserView.java
+            - src\main\java\com\db2api\ui\ApiBuilderView.java
+            - src\main\java\com\db2api\ui\ConnectionView.java
+            - src\main\java\com\db2api\ui\DashboardView.java
+            - src\main\java\com\db2api\ui\MainLayout.java
+            - src\main\java\com\db2api\ui\OrganizationView.java
+            - src\main\java\com\db2api\ui\admin\AdminUserView.java
+            - src\main\java\com\db2api\ui\api\ApiBuilderView.java
+            - src\main\java\com\db2api\ui\connection\ConnectionView.java
+            - src\main\java\com\db2api\ui\organization\OrganizationView.java
+            - src\main\resources\application.properties
+            - src\main\resources\cayenne-project.xml
+            - src\main\resources\datamap.map.xml
+            - src\main\resources\schema.sql
+            - src\test\java\com\db2api\migration\JpaMigrationTest.java
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

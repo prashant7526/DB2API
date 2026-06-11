@@ -1,10 +1,16 @@
 package com.db2api.persistent.api;
 
 import com.db2api.persistent.connection.DbConnection;
+import com.db2api.persistent.organization.Client;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entity representing an API definition.
@@ -24,14 +30,26 @@ public class ApiDefinition {
     private Long id;
 
     /**
+     * Human-readable name for this API definition.
+     */
+    @NotBlank(message = "API name is required")
+    @Size(max = 255)
+    @Column(name = "name")
+    private String name;
+
+    /**
      * The name of the database table exposed by this API.
      */
+    @NotBlank(message = "Table name is required")
+    @Size(max = 255)
     @Column(name = "table_name")
     private String tableName;
 
     /**
      * The type of API (e.g., REST, GraphQL).
      */
+    @NotBlank(message = "API type is required")
+    @Size(max = 50)
     @Column(name = "api_type")
     private String apiType;
 
@@ -53,4 +71,10 @@ public class ApiDefinition {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "connection_id")
     private DbConnection connection;
+
+    /**
+     * The clients authorized to access this API definition.
+     */
+    @ManyToMany(mappedBy = "allowedApis")
+    private List<Client> authorizedClients = new ArrayList<>();
 }

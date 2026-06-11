@@ -36,3 +36,25 @@ CREATE TABLE admin_user (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL -- ADMIN, EDITOR, VIEWER
 );
+
+CREATE TABLE client_api_access (
+    client_id INTEGER REFERENCES client(id),
+    api_definition_id INTEGER REFERENCES api_definition(id),
+    PRIMARY KEY (client_id, api_definition_id)
+);
+
+CREATE TABLE request_log (
+    id SERIAL PRIMARY KEY,
+    http_method VARCHAR(10) NOT NULL,
+    request_uri TEXT NOT NULL,
+    status_code INTEGER,
+    duration_ms BIGINT,
+    client_ip VARCHAR(45),
+    timestamp TIMESTAMP NOT NULL
+);
+
+CREATE TABLE revoked_token (
+    jti VARCHAR(64) PRIMARY KEY,
+    revoked_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);

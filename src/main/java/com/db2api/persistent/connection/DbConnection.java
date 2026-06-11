@@ -3,6 +3,8 @@ package com.db2api.persistent.connection;
 import com.db2api.persistent.api.ApiDefinition;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,30 +31,39 @@ public class DbConnection {
     /**
      * Human-readable name for the connection.
      */
+    @NotBlank(message = "Connection name is required")
+    @Size(max = 255)
     @Column(name = "name")
     private String name;
 
     /**
      * JDBC URL for the database connection.
      */
+    @NotBlank(message = "JDBC URL is required")
+    @Size(max = 500)
     @Column(name = "url")
     private String url;
 
     /**
      * Username for the database connection.
      */
+    @NotBlank(message = "Username is required")
+    @Size(max = 255)
     @Column(name = "username")
     private String username;
 
     /**
      * Encrypted password for the database connection.
      */
+    @NotBlank(message = "Password is required")
     @Column(name = "password")
     private String password;
 
     /**
      * Fully qualified name of the JDBC driver class.
      */
+    @NotBlank(message = "Driver class is required")
+    @Size(max = 255)
     @Column(name = "driver_class")
     private String driverClass;
 

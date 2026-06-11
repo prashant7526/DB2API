@@ -124,6 +124,24 @@ public class ApiBuilderView extends VerticalLayout {
         if (currentApiDefinition == null)
             return;
 
+        // Validate required fields
+        if (connectionSelect.getValue() == null) {
+            Notification.show("Please select a database connection", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        if (tableSelect.getValue() == null || tableSelect.getValue().isBlank()) {
+            Notification.show("Please select a table", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        if (apiTypeSelect.getValue() == null || apiTypeSelect.getValue().isBlank()) {
+            Notification.show("Please select an API type", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        if (operationsSelect.getSelectedItems().isEmpty()) {
+            Notification.show("Please select at least one operation", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+
         currentApiDefinition.setConnection(connectionSelect.getValue());
         currentApiDefinition.setTableName(tableSelect.getValue());
         currentApiDefinition.setApiType(apiTypeSelect.getValue());

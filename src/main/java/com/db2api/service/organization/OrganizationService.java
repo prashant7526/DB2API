@@ -45,7 +45,16 @@ public class OrganizationService {
         return organization.getClients();
     }
 
-    public void saveClient(Client client, Organization organization) {
+    /**
+     * Saves a client and generates credentials if new.
+     *
+     * @param client       the client to save
+     * @param organization the organization the client belongs to
+     * @return the raw client secret for one-time display, or null if the client already had credentials
+     */
+    public String saveClient(Client client, Organization organization) {
+        String rawSecret = null;
+
         if (client.getOrganization() == null) {
             client.setOrganization(organization);
         }
@@ -53,13 +62,12 @@ public class OrganizationService {
         // Generate Client ID and Secret if new
         if (client.getClientId() == null) {
             client.setClientId(UUID.randomUUID().toString());
-            String rawSecret = UUID.randomUUID().toString();
+            rawSecret = UUID.randomUUID().toString();
             client.setClientSecret(encryptionService.encrypt(rawSecret));
-            // Note: In a real app, we should show the raw secret to the user ONCE.
-            // Here we just store it encrypted.
         }
 
         clientRepository.save(client);
+        return rawSecret;
     }
 
     public void deleteClient(Client client) {
