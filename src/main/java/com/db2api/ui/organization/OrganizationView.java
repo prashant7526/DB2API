@@ -64,6 +64,7 @@ public class OrganizationView extends VerticalLayout {
      */
     private void updateList(Grid<Organization> grid) {
         grid.setItems(organizationService.getAllOrganizations());
+        grid.getDataProvider().refreshAll();
     }
 
     /**
