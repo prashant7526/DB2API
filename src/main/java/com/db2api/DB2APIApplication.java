@@ -2,17 +2,19 @@ package com.db2api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * The entry point of the Spring Boot application.
  * This class implements AppShellConfigurator to configure global application
  * settings for Vaadin.
  */
-@SpringBootApplication(exclude = SpringSecurityAutoConfiguration.class)
+@SpringBootApplication
 @Theme(value = "db2api")
+@StyleSheet(Lumo.UTILITY_STYLESHEET)
 public class DB2APIApplication implements AppShellConfigurator {
 
 	/**

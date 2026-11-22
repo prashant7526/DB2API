@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.6</version>
+		<version>4.2.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.db2api</groupId>
@@ -14,13 +14,11 @@
 	<name>DB2API</name>
 	<description>Dynamic API Generator from Database</description>
 	<properties>
-		<java.version>21</java.version>
-		<spring-security.version>6.4.5</spring-security.version>
-		<vaadin.version>24.9.7</vaadin.version>
-		<cayenne.version>4.2.1</cayenne.version>
-		<lombok.version>1.18.34</lombok.version>
+		<java.version>25</java.version>
+		<vaadin.version>25.3.5</vaadin.version>
+		<cayenne.version>4.2.3</cayenne.version>
+		<lombok.version>1.18.48</lombok.version>
 		<jakarta.annotation.version>3.0.0</jakarta.annotation.version>
-
 		<postgresql.version>42.7.4</postgresql.version>
 	</properties>
 	<dependencies>
@@ -49,6 +47,11 @@
 			<artifactId>vaadin-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-dev</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webflux</artifactId>
 			<scope>test</scope>
@@ -73,6 +76,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -111,6 +119,20 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<proc>full</proc>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

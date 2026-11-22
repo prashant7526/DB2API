@@ -20,6 +20,7 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @PageTitle("API Builder")
 @Route(value = "api-builder", layout = MainLayout.class)
+@PermitAll
 public class ApiBuilderView extends VerticalLayout {
 
     private final ApiDefinitionService apiDefinitionService;

@@ -20,6 +20,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
 /**
  * View for managing organizations and their associated API clients.
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.Route;
  */
 @PageTitle("Organizations")
 @Route(value = "organizations", layout = MainLayout.class)
+@PermitAll
 public class OrganizationView extends VerticalLayout {
 
     private final OrganizationService organizationService;

@@ -12,12 +12,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
 /**
  * Dashboard view providing an overview of the application with key metrics.
  */
 @PageTitle("Dashboard")
 @Route(value = "", layout = MainLayout.class)
+@PermitAll
 public class DashboardView extends VerticalLayout {
 
     private final ApiDefinitionService apiDefinitionService;
