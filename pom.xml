@@ -16,7 +16,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<vaadin.version>25.3.5</vaadin.version>
-		<cayenne.version>4.2.1</cayenne.version>
+		<cayenne.version>4.2.3</cayenne.version>
 		<lombok.version>1.18.48</lombok.version>
 		<jakarta.annotation.version>3.0.0</jakarta.annotation.version>
 		<postgresql.version>42.7.4</postgresql.version>
