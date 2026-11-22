@@ -14,7 +14,7 @@
 	<name>DB2API</name>
 	<description>Dynamic API Generator from Database</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<spring-security.version>6.4.5</spring-security.version>
 		<vaadin.version>24.9.7</vaadin.version>
 		<cayenne.version>4.2.1</cayenne.version>
