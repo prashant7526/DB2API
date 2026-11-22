@@ -1,21 +1,35 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+There are no versioned releases yet. Security fixes are prepared for the current `main` branch; other branches and snapshots are not guaranteed to receive fixes.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Version | Supported |
+| --- | --- |
+| `main` (current) | Yes |
+| Other branches or snapshots | No |
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Please report suspected vulnerabilities privately through GitHub's **Security** tab using **Report a vulnerability** (private vulnerability reporting is enabled for this repository). Do not open a public issue or pull request for an undisclosed vulnerability.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Include, when possible:
+
+- A concise description of the affected feature and potential impact.
+- The affected commit or application version and deployment configuration.
+- Steps to reproduce or a minimal proof of concept.
+
+Do not include real passwords, client secrets, access tokens, private keys, or production data. Redact sensitive values from logs and examples.
+
+If GitHub's private reporting option is unavailable, contact the repository owner privately through GitHub rather than disclosing the issue publicly.
+
+## Response and disclosure
+
+Reports are reviewed by the maintainers. We will acknowledge and follow up as soon as reasonably possible, but there is no guaranteed response-time SLA. If a report is accepted, we will coordinate remediation and disclosure with the reporter. If it is declined, we will explain the reason where possible. Please keep the report and details private until coordinated disclosure.
+
+## Deployment notes
+
+- The checked-in `application.properties` contains fixed credentials and fallback secrets. Treat them as public, override them in every environment, and rotate any values used outside disposable local development.
+- Change the initial `admin` / `admin` administrator password immediately on first run.
+- Use HTTPS for the administration UI and API endpoints, and protect OAuth client credentials and bearer tokens.
+- Keep the encryption secret stable or re-encrypt stored database passwords and client secrets before changing it; existing values cannot be decrypted with a different secret.

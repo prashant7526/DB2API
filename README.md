@@ -1,99 +1,102 @@
+# DB2API
 
-# DB2API: Automatic REST and GraphQL API Generation for Any Databases
-
-## Overview
-
-DB2API is a powerful web application that empowers you to instantly create REST and GraphQL APIs from your existing databases. Say goodbye to tedious boilerplate code and manual API development. With DB2API, you can connect to your database, select tables and columns, and generate a fully functional and secure API in minutes.
-
-This application is built with a modern technology stack, featuring a Java-based backend with Vaadin for the user interface, and a robust set of features for developers and administrators.
+DB2API is a Spring Boot application for configuring database connections and exposing selected tables through generated REST and GraphQL APIs. Administrators manage connections, organizations and API clients through a Vaadin web interface.
 
 ## Features
 
-*   **Automatic API Generation:** Instantly create REST and GraphQL APIs from your existing database schemas.
-*   **Secure by Design:** The application includes a robust security model with JWT-based authentication and role-based access control.
-*   **Intuitive User Interface:** A user-friendly web interface built with Vaadin allows for easy management of database connections, API definitions, and users.
-*   **Dynamic and Flexible:** The generated APIs are dynamic and can be easily customized to your needs.
-*   **Database Schema Discovery:** The application can automatically discover your database schema, making it easy to select the tables and columns you want to expose through your APIs.
-*   **Cayenne ORM Integration:** The application uses Apache Cayenne for object-relational mapping, providing a powerful and flexible way to interact with your database.
+- Discover schemas from configured JDBC databases.
+- Define REST or GraphQL APIs for selected tables, columns and operations.
+- Issue JWT access tokens through an OAuth2-style client credentials endpoint.
+- Manage database connections, organizations, API clients and administrator accounts in the web UI.
+- Encrypt saved connection passwords and client secrets.
 
-## Technologies Used
+## Technology
 
-*   **Backend:**
-    *   Java 25
-    *   Spring Boot
-    *   Vaadin
-    *   Apache Cayenne
-    *   Spring Security
-    *   GraphQL Java
-*   **Frontend:**
-    *   HTML/CSS
-    *   TypeScript
-*   **Database:**
-    *   MySQL
-    *   PostgreSQL
-    *   DB2 (can be extended to other SQL databases)
+- Java 25 and Spring Boot 4
+- Vaadin 25
+- Apache Cayenne 4.2.3
+- Spring Security and GraphQL Java
+- PostgreSQL for DB2API's own system database
 
-## Getting Started
+## Requirements
 
-### Prerequisites
+- JDK 25
+- Apache Maven
+- PostgreSQL
+- Node.js 24 for Vaadin frontend builds. Vaadin can download a compatible Node.js runtime when needed.
+- A JDBC driver for each external database you plan to connect. PostgreSQL is included by default; add other vendor drivers to `pom.xml`.
 
-*   **JDK 25:** Make sure you have JDK 25 installed and configured in your IDE.
-*   **Node.js 24:** Vaadin 25 requires Node.js 24 for frontend builds. Vaadin can install a compatible runtime automatically.
-*   **Maven:** A recent version of Apache Maven.
-*   **A DB2 instance:** You will need a running DB2 database to connect to.
+## Run locally
 
-### Installation and Running
+1. Clone the repository and enter the project directory:
 
-1.  **Clone the repository:**
+   ```sh
+   git clone https://github.com/prashant7526/DB2API.git
+   cd DB2API
+   ```
 
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>
-    ```
+2. Create the PostgreSQL database used by DB2API:
 
-2.  **Configure the database connection:**
+   ```sql
+   CREATE DATABASE db2api_system;
+   ```
 
-    Open the `src/main/resources/application.properties` file and update the database connection properties with your DB2 instance details.
+3. Configure the system database and application secrets. You can set these as environment variables or update `src/main/resources/application.properties` for local development:
 
-3.  **Build and run the application:**
+   | Environment variable | Purpose |
+   | --- | --- |
+   | `SPRING_DATASOURCE_URL` | PostgreSQL JDBC URL for `db2api_system` |
+   | `SPRING_DATASOURCE_USERNAME` | PostgreSQL username |
+   | `SPRING_DATASOURCE_PASSWORD` | PostgreSQL password |
+   | `APP_JWT_SECRET` | Secret used to sign and verify JWTs; use a random value of at least 32 bytes |
+   | `APP_ENCRYPTION_SECRET` | Secret used to encrypt saved database passwords and client secrets |
 
-    ```bash
-    mvn spring-boot:run
-    ```
+   The checked-in properties contain fixed credentials and fallback secrets. Treat them as public and override them in every environment; rotate any values that have been used outside disposable local development. Keep `APP_ENCRYPTION_SECRET` stable: changing it without first re-encrypting stored values makes existing saved passwords and client secrets unreadable.
 
-    The application will be available at `http://localhost:8080`.
+4. Build and run the application:
 
-## Project Structure
+   ```sh
+   mvn clean test
+   mvn spring-boot:run
+   ```
 
+5. Open [http://localhost:8080](http://localhost:8080) and sign in. On a new system database, the application creates an initial administrator account with username `admin` and password `admin`. Change this password immediately; it is only suitable for first-run local setup.
+
+6. In the UI, configure a database connection, create an organization and API client, then define the REST or GraphQL APIs to expose.
+
+## API usage
+
+### Get an access token
+
+Create a client in the UI, then exchange its credentials for a bearer token:
+
+```sh
+curl -X POST http://localhost:8080/oauth2/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "grant_type=client_credentials" \
+  --data-urlencode "client_id=YOUR_CLIENT_ID" \
+  --data-urlencode "client_secret=YOUR_CLIENT_SECRET"
 ```
-.
-├── frontend/                # Vaadin frontend files (TypeScript, CSS)
-├── src/main/java/com/db2api/ # Java source code
-│   ├── config/             # Spring and application configuration
-│   ├── controller/         # REST and GraphQL controllers
-│   ├── persistent/         # Cayenne data model objects
-│   ├── security/           # Spring Security configuration
-│   ├── service/            # Business logic services
-│   └── ui/                 # Vaadin UI views
-├── src/main/resources/       # Application resources
-│   ├── application.properties # Application configuration
-│   └── schema.sql        # Initial database schema
-├── pom.xml                   # Maven project configuration
-└── README.md                 # This file
+
+The response contains an `access_token` and `token_type` of `Bearer`.
+
+### Generated REST API
+
+REST endpoints use `/api/dynamic/{tableName}`. The available HTTP methods and columns depend on the API definition:
+
+```sh
+curl http://localhost:8080/api/dynamic/YOUR_TABLE \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-## API Endpoints
+### Generated GraphQL API
 
-The application exposes both REST and GraphQL endpoints.
+The GraphQL endpoint is `POST /graphql`. Its schema is built from the GraphQL API definitions configured in the UI. Send a standard GraphQL JSON request and include the same bearer token in the `Authorization` header.
 
-### REST API
+### Revoke a token
 
-The REST API is dynamically generated based on the API definitions you create in the application. The base URL for the REST API is `/api/`.
+Send a form-encoded `token` parameter to `POST /oauth2/revoke`.
 
-### GraphQL API
+## Security
 
-The GraphQL endpoint is available at `/graphql`. You can use a GraphQL client like Postman or Insomnia to explore the schema and make queries.
-
-## Authentication
-
-The application uses JWT-based authentication. To access the protected API endpoints, you need to obtain a JWT token by authenticating with the `/auth/login` endpoint.
+The administration UI requires login. Dynamic REST and GraphQL requests require a valid JWT bearer token. Use HTTPS in deployed environments, protect client credentials and tokens, and do not use the development defaults outside local development. See [SECURITY.md](SECURITY.md) for private vulnerability reporting instructions.
