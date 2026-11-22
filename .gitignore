@@ -7,3 +7,10 @@ node_modules/
 .vscode/
 .windsurf/
 target/
+
+# Local tooling and generated frontend artifacts
+/.bloop/
+/.metals/
+/.qoder/
+/frontend/generated/
+/src/main/bundles/

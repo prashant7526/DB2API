@@ -1,1 +1,0 @@
-Generates secure REST and GraphQL APIs dynamically from external database schemas using a Vaadin-based administrative interface.
