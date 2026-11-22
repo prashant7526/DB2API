@@ -42,7 +42,7 @@ public class OrganizationService {
         if (organization.getId() == null) {
             return List.of();
         }
-        return organization.getClients();
+        return clientRepository.findByOrganization_Id(organization.getId());
     }
 
     /**
