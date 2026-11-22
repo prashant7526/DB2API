@@ -19,7 +19,7 @@ This application is built with a modern technology stack, featuring a Java-based
 ## Technologies Used
 
 *   **Backend:**
-    *   Java 21
+    *   Java 25
     *   Spring Boot
     *   Vaadin
     *   Apache Cayenne
@@ -37,7 +37,8 @@ This application is built with a modern technology stack, featuring a Java-based
 
 ### Prerequisites
 
-*   **JDK 21:** Make sure you have JDK 21 installed and configured in your IDE.
+*   **JDK 25:** Make sure you have JDK 25 installed and configured in your IDE.
+*   **Node.js 24:** Vaadin 25 requires Node.js 24 for frontend builds. Vaadin can install a compatible runtime automatically.
 *   **Maven:** A recent version of Apache Maven.
 *   **A DB2 instance:** You will need a running DB2 database to connect to.
 

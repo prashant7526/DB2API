@@ -2,10 +2,10 @@ package com.db2api.config;
 
 import com.db2api.repository.auth.RevokedTokenRepository;
 import com.db2api.security.CustomUserDetailsService;
+import com.db2api.ui.LoginView;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -65,9 +64,7 @@ public class SecurityConfig {
     }
 
     /**
-     * UI filter chain: form-login security for the Vaadin admin interface.
-     * Replaces VaadinWebSecurity which is deprecated and incompatible with
-     * the Spring Security version managed by Spring Boot.
+     * UI filter chain: Vaadin-aware form login and view authorization.
      */
     @Bean
     @Order(2)
@@ -75,23 +72,20 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringRequestMatchers("/vaadin/**", "/VAADIN/**"))
-                .requestCache(cache -> cache.requestCache(new HttpSessionRequestCache()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                AntPathRequestMatcher.antMatcher("/login"),
-                                AntPathRequestMatcher.antMatcher("/oauth2/**"),
-                                AntPathRequestMatcher.antMatcher("/VAADIN/**"),
-                                AntPathRequestMatcher.antMatcher("/vaadinServlet/**"),
-                                AntPathRequestMatcher.antMatcher("/sw-runtime-resources-precache.js"),
-                                AntPathRequestMatcher.antMatcher("/favicon.ico"),
-                                AntPathRequestMatcher.antMatcher("/icons/**"),
-                                AntPathRequestMatcher.antMatcher("/images/**"),
-                                AntPathRequestMatcher.antMatcher("/line-awesome/**"),
-                                AntPathRequestMatcher.antMatcher("/themes/**"))
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(form -> form.loginPage("/login").permitAll())
-                .userDetailsService(userDetailsService);
+                                "/oauth2/**",
+                                "/VAADIN/**",
+                                "/vaadinServlet/**",
+                                "/sw-runtime-resources-precache.js",
+                                "/favicon.ico",
+                                "/icons/**",
+                                "/images/**",
+                                "/line-awesome/**",
+                                "/themes/**")
+                        .permitAll())
+                .userDetailsService(userDetailsService)
+                .with(VaadinSecurityConfigurer.vaadin(), vaadin -> vaadin.loginView(LoginView.class));
         return http.build();
     }
 

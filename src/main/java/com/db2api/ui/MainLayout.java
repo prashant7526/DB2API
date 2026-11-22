@@ -15,12 +15,14 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
 /**
  * Main application layout that provides the common navigation interface.
  * Based on Vaadin AppLayout, it includes a navbar with a drawer toggle and a
  * side navigation menu.
  */
+@PermitAll
 public class MainLayout extends AppLayout {
 
     /**
