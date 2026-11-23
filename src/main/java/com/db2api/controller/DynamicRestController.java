@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -76,7 +78,7 @@ public class DynamicRestController {
     @GetMapping("/{tableName}")
     public ResponseEntity<List<Map<String, Object>>> getData(@PathVariable String tableName) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");
-        if (apiDef == null) {
+        if (!isAvailableToCurrentClient(apiDef)) {
             return ResponseEntity.notFound().build();
         }
 
@@ -125,7 +127,10 @@ public class DynamicRestController {
             @RequestBody Map<String, Object> data,
             @RequestParam Map<String, String> conditions) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");
-        if (apiDef == null || !apiDef.getAllowedOperations().contains("PUT")) {
+        if (!isAvailableToCurrentClient(apiDef)) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!apiDef.getAllowedOperations().contains("PUT")) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
         }
 
@@ -192,7 +197,10 @@ public class DynamicRestController {
     public ResponseEntity<?> createData(@PathVariable String tableName,
             @RequestBody Map<String, Object> data) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");
-        if (apiDef == null || !apiDef.getAllowedOperations().contains("POST")) {
+        if (!isAvailableToCurrentClient(apiDef)) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!apiDef.getAllowedOperations().contains("POST")) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
         }
 
@@ -251,7 +259,10 @@ public class DynamicRestController {
     @DeleteMapping("/{tableName}")
     public ResponseEntity<?> deleteData(@PathVariable String tableName, @RequestParam Map<String, String> conditions) {
         ApiDefinition apiDef = apiDefinitionService.getApiDefinitionByTableNameAndType(tableName, "REST");
-        if (apiDef == null || !apiDef.getAllowedOperations().contains("DELETE")) {
+        if (!isAvailableToCurrentClient(apiDef)) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!apiDef.getAllowedOperations().contains("DELETE")) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
         }
 
@@ -316,5 +327,12 @@ public class DynamicRestController {
         }
 
         return validColumns.isEmpty() ? "*" : String.join(", ", validColumns);
+    }
+
+    private boolean isAvailableToCurrentClient(ApiDefinition apiDefinition) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return apiDefinition != null
+                && authentication != null
+                && apiDefinitionService.isAvailableToClient(apiDefinition.getId(), authentication.getName());
     }
 }

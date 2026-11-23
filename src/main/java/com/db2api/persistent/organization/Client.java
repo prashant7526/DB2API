@@ -27,6 +27,13 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max = 255)
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "active")
+    private Boolean active = true;
+
     /**
      * Unique client identifier used for OAuth2.
      */
@@ -41,12 +48,23 @@ public class Client {
     @Column(name = "client_secret")
     private String clientSecret;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "authentication_mode", length = 30)
+    private ClientAuthenticationMode authenticationMode = ClientAuthenticationMode.OAUTH2;
+
+    @Column(name = "bearer_token_hash", length = 64, unique = true)
+    private String bearerTokenHash;
+
     /**
      * The organization to which this client belongs.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_client_id")
+    private OrganizationClient organizationClient;
 
     /**
      * The list of API definitions this client is authorized to access.
@@ -58,4 +76,18 @@ public class Client {
             inverseJoinColumns = @JoinColumn(name = "api_definition_id")
     )
     private List<ApiDefinition> allowedApis = new ArrayList<>();
+
+    public ClientAuthenticationMode getAuthenticationMode() {
+        return authenticationMode == null ? ClientAuthenticationMode.OAUTH2 : authenticationMode;
+    }
+
+    public boolean isActive() {
+        return active == null || active;
+    }
+
+    public boolean isActiveInHierarchy() {
+        return isActive()
+                && organizationClient != null
+                && organizationClient.isActiveInHierarchy();
+    }
 }

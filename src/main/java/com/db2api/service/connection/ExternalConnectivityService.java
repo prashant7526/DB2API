@@ -98,8 +98,12 @@ public class ExternalConnectivityService {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(connection.getUrl());
         hikariConfig.setDriverClassName(connection.getDriverClass());
-        hikariConfig.setUsername(connection.getUsername());
-        hikariConfig.setPassword(decryptedPassword);
+        if (connection.getUsername() != null && !connection.getUsername().isBlank()) {
+            hikariConfig.setUsername(connection.getUsername());
+            hikariConfig.setPassword(decryptedPassword == null ? "" : decryptedPassword);
+        } else if (decryptedPassword != null && !decryptedPassword.isBlank()) {
+            hikariConfig.setPassword(decryptedPassword);
+        }
         hikariConfig.setMaximumPoolSize(maximumPoolSize);
         hikariConfig.setMinimumIdle(minimumIdle);
         hikariConfig.setIdleTimeout(idleTimeoutMs);

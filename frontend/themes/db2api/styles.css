@@ -1,1 +1,59 @@
-@import 'styles.css';
+html {
+  --lumo-primary-color: hsl(205, 78%, 42%);
+  --lumo-primary-color-50pct: hsla(205, 78%, 42%, 0.5);
+  --lumo-primary-color-10pct: hsla(205, 78%, 42%, 0.1);
+  --lumo-primary-text-color: hsl(205, 82%, 36%);
+  --lumo-primary-contrast-color: #fff;
+  --lumo-base-color: #fff;
+  --lumo-body-text-color: #26384b;
+  --lumo-header-text-color: #172d44;
+  --lumo-secondary-text-color: #65788b;
+  --lumo-contrast-5pct: rgba(32, 57, 82, 0.05);
+  --lumo-contrast-10pct: rgba(32, 57, 82, 0.1);
+  --lumo-contrast-20pct: rgba(32, 57, 82, 0.2);
+}
+
+html[theme~="dark"] {
+  --lumo-primary-color: hsl(205, 78%, 62%);
+  --lumo-primary-color-50pct: hsla(205, 78%, 62%, 0.5);
+  --lumo-primary-color-10pct: hsla(205, 78%, 62%, 0.12);
+  --lumo-primary-text-color: hsl(205, 82%, 72%);
+  --lumo-primary-contrast-color: #102236;
+  --lumo-base-color: #182332;
+  --lumo-body-text-color: #dce6f0;
+  --lumo-header-text-color: #f2f6fa;
+  --lumo-secondary-text-color: #a7b6c6;
+  --lumo-contrast-5pct: rgba(242, 247, 252, 0.06);
+  --lumo-contrast-10pct: rgba(242, 247, 252, 0.11);
+  --lumo-contrast-20pct: rgba(242, 247, 252, 0.2);
+}
+
+body {
+  background: #f3f6f9;
+}
+
+html[theme~="dark"] body {
+  background: #111a26;
+}
+
+vaadin-app-layout {
+  background: #f3f6f9;
+}
+
+html[theme~="dark"] vaadin-app-layout {
+  background: #111a26;
+}
+
+vaadin-app-layout::part(navbar) {
+  background: var(--lumo-base-color);
+  border-bottom: 1px solid var(--lumo-contrast-10pct);
+}
+
+vaadin-app-layout::part(drawer) {
+  background: var(--lumo-contrast-5pct);
+  border-inline-end: 1px solid var(--lumo-contrast-10pct);
+}
+
+vaadin-app-layout::part(content) {
+  overflow-y: auto;
+}

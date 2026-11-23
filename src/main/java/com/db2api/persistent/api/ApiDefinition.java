@@ -65,6 +65,9 @@ public class ApiDefinition {
     @Column(name = "included_columns")
     private String includedColumns;
 
+    @Column(name = "active")
+    private Boolean active = true;
+
     /**
      * The database connection used by this API definition.
      */
@@ -77,4 +80,8 @@ public class ApiDefinition {
      */
     @ManyToMany(mappedBy = "allowedApis")
     private List<Client> authorizedClients = new ArrayList<>();
+
+    public boolean isActive() {
+        return active == null || active;
+    }
 }

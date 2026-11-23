@@ -1,12 +1,15 @@
 package com.db2api.persistent.connection;
 
 import com.db2api.persistent.api.ApiDefinition;
+import com.db2api.persistent.organization.OrganizationClient;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +50,6 @@ public class DbConnection {
     /**
      * Username for the database connection.
      */
-    @NotBlank(message = "Username is required")
     @Size(max = 255)
     @Column(name = "username")
     private String username;
@@ -66,6 +68,11 @@ public class DbConnection {
     @Size(max = 255)
     @Column(name = "driver_class")
     private String driverClass;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_client_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private OrganizationClient organizationClient;
 
     /**
      * List of API definitions associated with this database connection.

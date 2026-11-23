@@ -42,28 +42,19 @@ public class Organization {
     @Column(name = "status")
     private String status;
 
-    /**
-     * List of clients belonging to this organization.
-     */
-    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Client> clients = new ArrayList<>();
+    public boolean isActive() {
+        return status == null || "Active".equalsIgnoreCase(status);
+    }
 
-    /**
-     * Utility method to add a client to this organization.
-     * 
-     * @param client the client to add
-     */
-    public void addToClients(Client client) {
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrganizationClient> clients = new ArrayList<>();
+
+    public void addClient(OrganizationClient client) {
         clients.add(client);
         client.setOrganization(this);
     }
 
-    /**
-     * Utility method to remove a client from this organization.
-     * 
-     * @param client the client to remove
-     */
-    public void removeFromClients(Client client) {
+    public void removeClient(OrganizationClient client) {
         clients.remove(client);
         client.setOrganization(null);
     }

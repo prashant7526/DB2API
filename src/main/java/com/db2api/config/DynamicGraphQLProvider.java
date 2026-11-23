@@ -16,6 +16,9 @@ import org.apache.cayenne.ObjectContext;
 import org.apache.cayenne.query.SQLSelect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -82,7 +85,9 @@ public class DynamicGraphQLProvider {
         StringBuilder sdl = new StringBuilder();
         sdl.append("type Query {\n");
 
-        List<ApiDefinition> apis = apiDefinitionService.getAllApiDefinitions();
+        List<ApiDefinition> apis = apiDefinitionService.getAllApiDefinitions().stream()
+                .filter(ApiDefinition::isActive)
+                .toList();
         Map<String, DataFetcher<?>> queryFetchers = new HashMap<>();
         Map<String, DataFetcher<?>> mutationFetchers = new HashMap<>();
         StringBuilder mutationSdl = new StringBuilder("type Mutation {\n");
@@ -96,14 +101,20 @@ public class DynamicGraphQLProvider {
                 // Query field (GET)
                 if (allowedOps.contains("GET")) {
                     sdl.append("  ").append(tableName).append(": [").append(typeName).append("]\n");
-                    queryFetchers.put(tableName, env -> fetchData(api));
+                    queryFetchers.put(tableName, env -> {
+                        requireClientAccess(api);
+                        return fetchData(api);
+                    });
                 }
 
                 // Mutation: insert (POST)
                 if (allowedOps.contains("POST")) {
                     String inputTypeName = typeName + "Input";
                     mutationSdl.append("  insert").append(typeName).append("(data: ").append(inputTypeName).append("!): String\n");
-                    mutationFetchers.put("insert" + typeName, env -> insertData(api, env.getArgument("data")));
+                    mutationFetchers.put("insert" + typeName, env -> {
+                        requireClientAccess(api);
+                        return insertData(api, env.getArgument("data"));
+                    });
                 }
 
                 // Mutation: update (PUT)
@@ -111,7 +122,10 @@ public class DynamicGraphQLProvider {
                     String inputTypeName = typeName + "Input";
                     mutationSdl.append("  update").append(typeName).append("(data: ").append(inputTypeName).append("!, conditions: ").append(inputTypeName).append("!): String\n");
                     mutationFetchers.put("update" + typeName,
-                            env -> updateData(api, env.getArgument("data"), env.getArgument("conditions")));
+                            env -> {
+                                requireClientAccess(api);
+                                return updateData(api, env.getArgument("data"), env.getArgument("conditions"));
+                            });
                 }
 
                 // Mutation: delete (DELETE)
@@ -119,8 +133,12 @@ public class DynamicGraphQLProvider {
                     String inputTypeName = typeName + "Input";
                     mutationSdl.append("  delete").append(typeName).append("(conditions: ").append(inputTypeName).append("!): String\n");
                     mutationFetchers.put("delete" + typeName,
-                            env -> deleteData(api, env.getArgument("conditions")));
+                            env -> {
+                                requireClientAccess(api);
+                                return deleteData(api, env.getArgument("conditions"));
+                            });
                 }
+
             }
         }
         sdl.append("}\n\n");
@@ -177,6 +195,14 @@ public class DynamicGraphQLProvider {
         GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, wiringBuilder.build());
         this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
         logger.info("GraphQL schema refreshed with {} API definitions", apis.size());
+    }
+
+    private void requireClientAccess(ApiDefinition api) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !apiDefinitionService.isAvailableToClient(api.getId(), authentication.getName())) {
+            throw new AccessDeniedException("This API is inactive or is not assigned to this user");
+        }
     }
 
     /**

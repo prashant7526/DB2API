@@ -3,13 +3,13 @@ package com.db2api.service.api;
 import com.db2api.service.EncryptionService;
 
 import com.db2api.persistent.connection.DbConnection;
+import com.db2api.service.connection.JdbcConnectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ public class SchemaDiscoveryService {
     public List<String> getTables(DbConnection conn) {
         List<String> tables = new ArrayList<>();
         String decryptedPassword = encryptionService.decrypt(conn.getPassword());
-        try (Connection connection = DriverManager.getConnection(conn.getUrl(), conn.getUsername(),
-                decryptedPassword)) {
+        try (Connection connection = JdbcConnectionHelper.open(
+                conn.getUrl(), conn.getUsername(), decryptedPassword)) {
             DatabaseMetaData metaData = connection.getMetaData();
             try (ResultSet rs = metaData.getTables(null, null, "%", new String[] { "TABLE", "VIEW" })) {
                 while (rs.next()) {
@@ -52,8 +52,8 @@ public class SchemaDiscoveryService {
     public List<String> getColumns(DbConnection conn, String tableName) {
         List<String> columns = new ArrayList<>();
         String decryptedPassword = encryptionService.decrypt(conn.getPassword());
-        try (Connection connection = DriverManager.getConnection(conn.getUrl(), conn.getUsername(),
-                decryptedPassword)) {
+        try (Connection connection = JdbcConnectionHelper.open(
+                conn.getUrl(), conn.getUsername(), decryptedPassword)) {
             DatabaseMetaData metaData = connection.getMetaData();
             try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
                 while (rs.next()) {
@@ -76,8 +76,8 @@ public class SchemaDiscoveryService {
     public Map<String, Integer> getColumnTypes(DbConnection conn, String tableName) {
         Map<String, Integer> columns = new LinkedHashMap<>();
         String decryptedPassword = encryptionService.decrypt(conn.getPassword());
-        try (Connection connection = DriverManager.getConnection(conn.getUrl(), conn.getUsername(),
-                decryptedPassword)) {
+        try (Connection connection = JdbcConnectionHelper.open(
+                conn.getUrl(), conn.getUsername(), decryptedPassword)) {
             DatabaseMetaData metaData = connection.getMetaData();
             try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
                 while (rs.next()) {

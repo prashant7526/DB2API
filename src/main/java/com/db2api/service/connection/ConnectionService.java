@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.List;
 
 @Service
@@ -35,16 +34,18 @@ public class ConnectionService {
 
     /**
      * Saves a database connection, encrypting the raw password if provided.
-     * Only encrypts when a new raw password is supplied via the transient
-     * {@code rawPassword} field. If the connection already has an encrypted
-     * password and no new raw password is given, the existing encrypted
-     * password is preserved.
+     * Encrypts a supplied password, including an empty password for a new
+     * passwordless connection. On an existing connection, an empty password
+     * preserves the saved encrypted password.
      *
      * @param connection the connection to save
      * @param rawPassword the new plaintext password, or null/empty to keep existing
      */
     public void saveConnection(DbConnection connection, String rawPassword) {
-        if (rawPassword != null && !rawPassword.isEmpty()) {
+        boolean sqlite = DatabaseType.fromDriverClass(connection.getDriverClass())
+                .filter(type -> type == DatabaseType.SQLITE)
+                .isPresent();
+        if (rawPassword != null && (!rawPassword.isEmpty() || connection.getPassword() == null || sqlite)) {
             connection.setPassword(encryptionService.encrypt(rawPassword));
         }
         dbConnectionRepository.save(connection);
@@ -84,9 +85,20 @@ public class ConnectionService {
     }
 
     public boolean testConnection(DbConnection conn) {
-        String decryptedPassword = encryptionService.decrypt(conn.getPassword());
-        try (Connection connection = DriverManager.getConnection(conn.getUrl(), conn.getUsername(),
-                decryptedPassword)) {
+        return testConnection(conn, null);
+    }
+
+    public boolean testConnection(DbConnection conn, String rawPassword) {
+        String decryptedPassword;
+        if (rawPassword != null && !rawPassword.isEmpty()) {
+            decryptedPassword = rawPassword;
+        } else if (conn.getPassword() != null) {
+            decryptedPassword = encryptionService.decrypt(conn.getPassword());
+        } else {
+            decryptedPassword = rawPassword;
+        }
+        try (Connection connection = JdbcConnectionHelper.open(
+                conn.getUrl(), conn.getUsername(), decryptedPassword)) {
             return connection.isValid(5);
         } catch (Exception e) {
             logger.error("Error testing connection", e);

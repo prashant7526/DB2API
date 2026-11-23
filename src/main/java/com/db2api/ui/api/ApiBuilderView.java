@@ -4,13 +4,18 @@ import com.db2api.ui.MainLayout;
 
 import com.db2api.persistent.api.ApiDefinition;
 import com.db2api.persistent.connection.DbConnection;
+import com.db2api.persistent.organization.Client;
+import com.db2api.persistent.organization.OrganizationClient;
 import com.db2api.service.api.ApiDefinitionService;
 import com.db2api.service.connection.ConnectionService;
 import com.db2api.service.api.SchemaDiscoveryService;
+import com.db2api.service.organization.OrganizationService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
@@ -22,6 +27,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +36,7 @@ import java.util.stream.Collectors;
  * This view allows users to select a database connection, choose a table,
  * and define columns and operations to be exposed as a REST or GraphQL API.
  */
-@PageTitle("API Builder")
+@PageTitle("API")
 @Route(value = "api-builder", layout = MainLayout.class)
 @PermitAll
 public class ApiBuilderView extends VerticalLayout {
@@ -37,6 +44,7 @@ public class ApiBuilderView extends VerticalLayout {
     private final ApiDefinitionService apiDefinitionService;
     private final ConnectionService connectionService;
     private final SchemaDiscoveryService schemaDiscoveryService;
+    private final OrganizationService organizationService;
 
     private ApiDefinition currentApiDefinition;
 
@@ -49,10 +57,12 @@ public class ApiBuilderView extends VerticalLayout {
      */
     public ApiBuilderView(ApiDefinitionService apiDefinitionService,
             ConnectionService connectionService,
-            SchemaDiscoveryService schemaDiscoveryService) {
+            SchemaDiscoveryService schemaDiscoveryService,
+            OrganizationService organizationService) {
         this.apiDefinitionService = apiDefinitionService;
         this.connectionService = connectionService;
         this.schemaDiscoveryService = schemaDiscoveryService;
+        this.organizationService = organizationService;
         initUI();
     }
 
@@ -89,25 +99,33 @@ public class ApiBuilderView extends VerticalLayout {
      */
     private void editApiDefinition(ApiDefinition api, Grid<ApiDefinition> grid, ComboBox<DbConnection> connectionSelect,
             ComboBox<String> tableSelect, CheckboxGroup<String> columnsSelect, CheckboxGroup<String> operationsSelect,
-            RadioButtonGroup<String> apiTypeSelect) {
+            RadioButtonGroup<String> apiTypeSelect, MultiSelectComboBox<Client> usersSelect, Checkbox active) {
         if (api == null) {
-            editApiDefinition(apiDefinitionService.createNewApiDefinition(), grid, connectionSelect, tableSelect,
-                    columnsSelect, operationsSelect, apiTypeSelect);
-        } else {
-            currentApiDefinition = api;
-            if (api.getConnection() != null) {
-                connectionSelect.setValue(api.getConnection());
-                // Trigger table load
-                if (api.getTableName() != null) {
-                    tableSelect.setValue(api.getTableName());
-                    // Trigger column load
-                    // TODO: Parse included columns string and set selection
-                }
-            }
-            if (api.getApiType() != null)
-                apiTypeSelect.setValue(api.getApiType());
-            // TODO: Parse allowed operations and set selection
+            api = apiDefinitionService.createNewApiDefinition();
         }
+        currentApiDefinition = api;
+        connectionSelect.clear();
+        tableSelect.clear();
+        columnsSelect.clear();
+        operationsSelect.clear();
+        apiTypeSelect.clear();
+        if (api.getConnection() != null) {
+            connectionSelect.setValue(api.getConnection());
+            if (api.getTableName() != null) {
+                tableSelect.setValue(api.getTableName());
+            }
+        }
+        if (api.getApiType() != null) {
+            apiTypeSelect.setValue(api.getApiType());
+        }
+        active.setValue(api.isActive());
+        Set<Long> authorizedUserIds = apiDefinitionService.getAuthorizedUsers(api).stream()
+                .map(Client::getId)
+                .collect(Collectors.toSet());
+        Set<Client> listedAuthorizedUsers = usersSelect.getListDataView().getItems()
+                .filter(user -> authorizedUserIds.contains(user.getId()))
+                .collect(Collectors.toSet());
+        usersSelect.setValue(new HashSet<>(listedAuthorizedUsers));
     }
 
     /**
@@ -122,7 +140,7 @@ public class ApiBuilderView extends VerticalLayout {
      */
     private void save(Grid<ApiDefinition> grid, ComboBox<DbConnection> connectionSelect, ComboBox<String> tableSelect,
             CheckboxGroup<String> columnsSelect, CheckboxGroup<String> operationsSelect,
-            RadioButtonGroup<String> apiTypeSelect) {
+            RadioButtonGroup<String> apiTypeSelect, MultiSelectComboBox<Client> usersSelect, Checkbox active) {
         if (currentApiDefinition == null)
             return;
 
@@ -149,31 +167,14 @@ public class ApiBuilderView extends VerticalLayout {
         currentApiDefinition.setApiType(apiTypeSelect.getValue());
         currentApiDefinition.setAllowedOperations(String.join(",", operationsSelect.getSelectedItems()));
         currentApiDefinition.setIncludedColumns(String.join(",", columnsSelect.getSelectedItems()));
+        currentApiDefinition.setActive(active.getValue());
 
-        apiDefinitionService.saveApiDefinition(currentApiDefinition);
-        updateList(grid);
-        Notification.show("API Definition saved");
-    }
-
-    /**
-     * Deletes the currently selected API definition.
-     * 
-     * @param grid             the grid to update
-     * @param connectionSelect connection selection to reset
-     * @param tableSelect      table selection to reset
-     * @param columnsSelect    column selection to reset
-     * @param operationsSelect operation selection to reset
-     * @param apiTypeSelect    type selection to reset
-     */
-    private void delete(Grid<ApiDefinition> grid, ComboBox<DbConnection> connectionSelect, ComboBox<String> tableSelect,
-            CheckboxGroup<String> columnsSelect, CheckboxGroup<String> operationsSelect,
-            RadioButtonGroup<String> apiTypeSelect) {
-        if (currentApiDefinition != null) {
-            apiDefinitionService.deleteApiDefinition(currentApiDefinition);
+        try {
+            apiDefinitionService.saveApiDefinition(currentApiDefinition, usersSelect.getSelectedItems().stream().toList());
             updateList(grid);
-            editApiDefinition(null, grid, connectionSelect, tableSelect, columnsSelect, operationsSelect,
-                    apiTypeSelect);
-            Notification.show("API Definition deleted");
+            Notification.show("API definition saved");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            Notification.show(exception.getMessage());
         }
     }
 
@@ -191,39 +192,56 @@ public class ApiBuilderView extends VerticalLayout {
         CheckboxGroup<String> columnsSelect = new CheckboxGroup<>("Included Columns");
         CheckboxGroup<String> operationsSelect = new CheckboxGroup<>("Operations");
         RadioButtonGroup<String> apiTypeSelect = new RadioButtonGroup<>("API Type");
+        MultiSelectComboBox<Client> usersSelect = new MultiSelectComboBox<>("Available to credential users");
+        Checkbox active = new Checkbox("Active");
 
         Button save = new Button("Save");
-        Button delete = new Button("Delete");
         Button cancel = new Button("Cancel");
         Button create = new Button("New API");
 
-        setSizeFull();
+        setWidthFull();
 
         // Grid Configuration
         grid.addColumn(api -> api.getConnection() != null ? api.getConnection().getName() : "").setHeader("Connection");
         grid.addColumn(ApiDefinition::getTableName).setHeader("Table");
         grid.addColumn(ApiDefinition::getApiType).setHeader("Type");
+        grid.addColumn(api -> api.isActive() ? "Active" : "Inactive").setHeader("Status");
         grid.asSingleSelect().addValueChangeListener(event -> editApiDefinition(event.getValue(), grid,
-                connectionSelect, tableSelect, columnsSelect, operationsSelect, apiTypeSelect));
+                connectionSelect, tableSelect, columnsSelect, operationsSelect, apiTypeSelect, usersSelect, active));
 
         // Interaction Buttons
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         save.addClickListener(
-                event -> save(grid, connectionSelect, tableSelect, columnsSelect, operationsSelect, apiTypeSelect));
-        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        delete.addClickListener(
-                event -> delete(grid, connectionSelect, tableSelect, columnsSelect, operationsSelect, apiTypeSelect));
+                event -> save(grid, connectionSelect, tableSelect, columnsSelect, operationsSelect, apiTypeSelect,
+                        usersSelect, active));
         cancel.addClickListener(event -> editApiDefinition(null, grid, connectionSelect, tableSelect, columnsSelect,
-                operationsSelect, apiTypeSelect));
+                operationsSelect, apiTypeSelect, usersSelect, active));
         create.addClickListener(event -> {
             grid.asSingleSelect().clear();
             editApiDefinition(apiDefinitionService.createNewApiDefinition(), grid, connectionSelect, tableSelect,
-                    columnsSelect, operationsSelect, apiTypeSelect);
+                    columnsSelect, operationsSelect, apiTypeSelect, usersSelect, active);
         });
 
         // Editor Form Logic - Cascading Selections
         connectionSelect.setItems(connectionService.getAllConnections());
-        connectionSelect.setItemLabelGenerator(DbConnection::getName);
+        usersSelect.setItems(organizationService.getAllClientUsers());
+        usersSelect.setHelperText("An active API must have at least one active user assigned.");
+        usersSelect.setItemLabelGenerator(user -> {
+            OrganizationClient organizationClient = user.getOrganizationClient();
+            String clientPath = organizationClient == null
+                    ? "Unassigned"
+                    : organizationClient.getOrganization().getName() + " / " + organizationClient.getName();
+            String userName = user.getUserName() == null ? "API user" : user.getUserName();
+            String status = user.isActiveInHierarchy() ? "active" : "inactive";
+            return userName + " — " + clientPath + " (" + status + ", " + user.getClientId() + ")";
+        });
+        connectionSelect.setItemLabelGenerator(connection -> {
+            OrganizationClient client = connection.getOrganizationClient();
+            return client == null
+                    ? connection.getName() + " (unassigned)"
+                    : connection.getName() + " — "
+                            + client.getOrganization().getName() + " / " + client.getName();
+        });
         connectionSelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 tableSelect.setItems(schemaDiscoveryService.getTables(e.getValue()));
@@ -246,7 +264,7 @@ public class ApiBuilderView extends VerticalLayout {
         apiTypeSelect.setItems("REST", "GraphQL");
 
         // Layout Assembly
-        HorizontalLayout buttons = new HorizontalLayout(save, delete, cancel);
+        HorizontalLayout buttons = new HorizontalLayout(save, cancel);
         VerticalLayout editorLayout = new VerticalLayout(
                 create,
                 connectionSelect,
@@ -254,15 +272,19 @@ public class ApiBuilderView extends VerticalLayout {
                 apiTypeSelect,
                 operationsSelect,
                 columnsSelect,
+                usersSelect,
+                active,
                 buttons);
         editorLayout.setPadding(true);
         editorLayout.setSpacing(true);
 
         SplitLayout splitLayout = new SplitLayout(grid, editorLayout);
         splitLayout.setSplitterPosition(40);
-        splitLayout.setSizeFull();
+        splitLayout.setWidthFull();
+        splitLayout.setHeight("70vh");
+        splitLayout.setMinHeight("560px");
 
-        add(new H2("API Builder"), splitLayout);
+        add(new H2("API"), splitLayout);
 
         // Initial State
         updateList(grid);
@@ -270,8 +292,9 @@ public class ApiBuilderView extends VerticalLayout {
         // Role-Based Access Control
         if (isViewer()) {
             save.setVisible(false);
-            delete.setVisible(false);
             create.setVisible(false);
+            usersSelect.setReadOnly(true);
+            active.setReadOnly(true);
         }
     }
 }

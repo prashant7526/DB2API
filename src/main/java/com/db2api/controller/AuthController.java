@@ -2,6 +2,7 @@ package com.db2api.controller;
 
 import com.db2api.persistent.auth.RevokedToken;
 import com.db2api.persistent.organization.Client;
+import com.db2api.persistent.organization.ClientAuthenticationMode;
 import com.db2api.repository.auth.RevokedTokenRepository;
 import com.db2api.service.EncryptionService;
 import com.db2api.service.organization.OrganizationService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -91,14 +93,18 @@ public class AuthController {
         if (client == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "invalid_client"));
         }
+        if (client.getAuthenticationMode() != ClientAuthenticationMode.OAUTH2
+                || !client.isActiveInHierarchy()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "invalid_client"));
+        }
 
         String decryptedSecret = encryptionService.decrypt(client.getClientSecret());
-        if (!decryptedSecret.equals(clientSecret)) {
+        if (!clientSecret.equals(decryptedSecret)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "invalid_client"));
         }
 
         try {
-            MACSigner signer = new MACSigner(jwtSecret.getBytes());
+            MACSigner signer = new MACSigner(jwtSecret.getBytes(StandardCharsets.UTF_8));
             String jti = UUID.randomUUID().toString();
             Date expiryTime = new Date(new Date().getTime() + (long) jwtExpirationHours * 3600 * 1000);
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
