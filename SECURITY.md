@@ -31,5 +31,7 @@ Reports are reviewed by the maintainers. We will acknowledge and follow up as so
 
 - The checked-in `application.properties` contains fixed credentials and fallback secrets. Treat them as public, override them in every environment, and rotate any values used outside disposable local development.
 - Change the initial `admin` / `admin` administrator password immediately on first run.
-- Use HTTPS for the administration UI and API endpoints, and protect OAuth client credentials and bearer tokens.
+- Use HTTPS for the administration UI and API endpoints, and protect HTTP Basic client credentials, Bearer API tokens, and OAuth2 client credentials/access tokens.
 - Keep the encryption secret stable or re-encrypt stored database passwords and client secrets before changing it; existing values cannot be decrypted with a different secret.
+- Keep organization, named-client, credential-user and API activation state aligned with the access you intend to grant. Inactive users or parent organizations/clients cannot authenticate or access APIs.
+- Organization deletion is available only at the organization level and is blocked until every named client, credential user and assigned API beneath it is inactive. Deletion removes the organization and its nested named clients and credential users; use deactivation rather than deletion to suspend access.

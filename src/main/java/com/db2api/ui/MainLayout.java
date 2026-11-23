@@ -6,6 +6,7 @@ import com.db2api.ui.api.ApiBuilderView;
 import com.db2api.ui.admin.AdminUserView;
 
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -25,11 +26,23 @@ import jakarta.annotation.security.PermitAll;
 @PermitAll
 public class MainLayout extends AppLayout {
 
+    private Button themeToggle;
+
     /**
      * Constructs the MainLayout.
      */
     public MainLayout() {
         initUI();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent event) {
+        super.onAttach(event);
+        event.getUI().getPage().executeJs(
+                "const mode = localStorage.getItem('db2api-theme') === 'dark' ? 'dark' : 'light';"
+                        + "document.documentElement.setAttribute('theme', mode === 'dark' ? 'db2api dark' : 'db2api');"
+                        + "return mode;")
+                .then(String.class, mode -> updateThemeToggle("dark".equals(mode)));
     }
 
     /**
@@ -60,9 +73,9 @@ public class MainLayout extends AppLayout {
         // Side Navigation Configuration
         SideNav nav = new SideNav();
         nav.addItem(new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create()));
-        nav.addItem(new SideNavItem("Organizations", OrganizationView.class, VaadinIcon.BUILDING.create()));
-        nav.addItem(new SideNavItem("Connections", ConnectionView.class, VaadinIcon.DATABASE.create()));
-        nav.addItem(new SideNavItem("API Builder", ApiBuilderView.class, VaadinIcon.MAGIC.create()));
+        nav.addItem(new SideNavItem("Organization & Clients", OrganizationView.class, VaadinIcon.BUILDING.create()));
+        nav.addItem(new SideNavItem("Users & Connections", ConnectionView.class, VaadinIcon.DATABASE.create()));
+        nav.addItem(new SideNavItem("API", ApiBuilderView.class, VaadinIcon.MAGIC.create()));
 
         // Role-Based Navigation
         if (isAdmin()) {
@@ -84,7 +97,25 @@ public class MainLayout extends AppLayout {
             com.vaadin.flow.component.UI.getCurrent().getPage().setLocation("/login");
         });
 
-        addToNavbar(toggle, title, logout);
+        themeToggle = new Button(VaadinIcon.MOON.create());
+        themeToggle.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        themeToggle.setAriaLabel("Switch to dark theme");
+        themeToggle.setTooltipText("Switch to dark theme");
+        themeToggle.addClickListener(event -> getUI().ifPresent(ui -> ui.getPage().executeJs(
+                "const dark = localStorage.getItem('db2api-theme') === 'dark';"
+                        + "const mode = dark ? 'light' : 'dark';"
+                        + "localStorage.setItem('db2api-theme', mode);"
+                        + "document.documentElement.setAttribute('theme', mode === 'dark' ? 'db2api dark' : 'db2api');"
+                        + "return mode;")
+                .then(String.class, mode -> updateThemeToggle("dark".equals(mode)))));
+
+        addToNavbar(toggle, title, themeToggle, logout);
         addToDrawer(scroller);
+    }
+
+    private void updateThemeToggle(boolean darkMode) {
+        String label = darkMode ? "Switch to light theme" : "Switch to dark theme";
+        themeToggle.setAriaLabel(label);
+        themeToggle.setTooltipText(label);
     }
 }

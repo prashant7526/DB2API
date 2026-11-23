@@ -2,6 +2,7 @@ package com.db2api.config;
 
 import com.db2api.persistent.admin.AdminUser;
 import com.db2api.service.admin.AdminUserService;
+import com.db2api.service.organization.OrganizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -18,14 +19,16 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
     private final AdminUserService adminUserService;
+    private final OrganizationService organizationService;
 
     /**
      * Constructs the DataInitializer.
      * 
      * @param adminUserService the service used to manage admin users
      */
-    public DataInitializer(AdminUserService adminUserService) {
+    public DataInitializer(AdminUserService adminUserService, OrganizationService organizationService) {
         this.adminUserService = adminUserService;
+        this.organizationService = organizationService;
     }
 
     /**
@@ -36,6 +39,7 @@ public class DataInitializer implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
+        organizationService.migrateLegacyClientUsers();
         createDefaultAdminUser();
     }
 

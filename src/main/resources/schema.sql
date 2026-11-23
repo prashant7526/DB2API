@@ -4,11 +4,23 @@ CREATE TABLE organization (
     status VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE organization_client (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    organization_id INTEGER NOT NULL REFERENCES organization(id)
+);
+
 CREATE TABLE client (
     id SERIAL PRIMARY KEY,
+    user_name VARCHAR(255),
     client_id VARCHAR(255) NOT NULL UNIQUE,
     client_secret VARCHAR(255) NOT NULL,
-    organization_id INTEGER REFERENCES organization(id)
+    active BOOLEAN DEFAULT TRUE,
+    authentication_mode VARCHAR(30) NOT NULL DEFAULT 'OAUTH2',
+    bearer_token_hash VARCHAR(64) UNIQUE,
+    organization_id INTEGER REFERENCES organization(id),
+    organization_client_id INTEGER REFERENCES organization_client(id)
 );
 
 CREATE TABLE db_connection (
@@ -17,7 +29,8 @@ CREATE TABLE db_connection (
     url VARCHAR(500) NOT NULL,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    driver_class VARCHAR(255) NOT NULL
+    driver_class VARCHAR(255) NOT NULL,
+    organization_client_id INTEGER REFERENCES organization_client(id) ON DELETE SET NULL
 );
 
 CREATE TABLE api_definition (
@@ -27,7 +40,8 @@ CREATE TABLE api_definition (
     api_type VARCHAR(50) NOT NULL, -- REST, GraphQL
     table_name VARCHAR(255) NOT NULL,
     allowed_operations VARCHAR(255), -- GET, PUT, POST, DELETE
-    included_columns TEXT
+    included_columns TEXT,
+    active BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE admin_user (
